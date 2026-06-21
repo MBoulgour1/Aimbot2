@@ -1,1 +1,1 @@
-# Aimbot2
+print("Hello)
