@@ -66,6 +66,19 @@ local espObjects = {}
 local toggleSetters = {}
 local originalCollision = {}
 
+--// Caches pour éviter Players:GetPlayers() à chaque frame
+local playerList = Players:GetPlayers()
+local function refreshPlayerList()
+	playerList = Players:GetPlayers()
+end
+Players.PlayerAdded:Connect(refreshPlayerList)
+Players.PlayerRemoving:Connect(refreshPlayerList)
+
+--// Aim Assist optimisé : on recalcule la cible plusieurs fois par seconde, pas à chaque frame
+local aimTargetPart = nil
+local aimScanTimer = 0
+local AIM_SCAN_RATE = 0.07
+
 player:SetAttribute("NoRecoil", state.NoRecoil)
 player:SetAttribute("ClientFly", state.Fly)
 player:SetAttribute("AimAssist", state.AimAssist)
@@ -275,7 +288,7 @@ stroke(titleBox, THEME.Stroke, 1, 0)
 create("TextLabel", {
 	Size = UDim2.new(1, 0, 1, 0),
 	BackgroundTransparency = 1,
-	Text = "Solarys",
+	Text = "N E W",
 	TextColor3 = THEME.Text,
 	Font = Enum.Font.Code,
 	TextSize = 12,
@@ -853,7 +866,7 @@ local function getClosestAimTarget()
 	local closestName = "Aucune"
 	local closestScreenDistance = math.huge
 
-	for _, otherPlayer in ipairs(Players:GetPlayers()) do
+	for _, otherPlayer in ipairs(playerList) do
 		if otherPlayer ~= player and otherPlayer.Character and isAlive(otherPlayer.Character) and isEnemy(otherPlayer) then
 			local part = getSafeTargetPart(otherPlayer.Character)
 
@@ -902,7 +915,7 @@ local function getNearestEnemy()
 	local nearestPlayer = nil
 	local nearestDistance = math.huge
 
-	for _, otherPlayer in ipairs(Players:GetPlayers()) do
+	for _, otherPlayer in ipairs(playerList) do
 		if otherPlayer ~= player and otherPlayer.Character and isAlive(otherPlayer.Character) and isEnemy(otherPlayer) then
 			local targetRoot = getSafeRoot(otherPlayer.Character)
 
@@ -949,7 +962,8 @@ local ESP_LINE_THICKNESS = 1
 local ESP_HEALTH_WIDTH = 3
 local ESP_HEALTH_GAP = 4
 local ESP_BOX_PADDING = 4
-local ESP_UPDATE_RATE = 0.03
+local ESP_UPDATE_RATE = 0.12 -- optimisé : 8 fois/sec au lieu de 30+ fois/sec
+local ESP_TEXT_UPDATE_RATE = 0.35 -- le texte est plus lourd, on le met à jour moins souvent
 
 local function getESPHealthColor(percent)
 	if percent > 0.5 then
@@ -1051,8 +1065,9 @@ local function createESPForPlayer(targetPlayer)
 
 	local model = targetPlayer.Character
 	local hum = model:FindFirstChildOfClass("Humanoid")
+	local root = getSafeRoot(model)
 
-	if not hum or hum.Health <= 0 then
+	if not hum or hum.Health <= 0 or not root then
 		return
 	end
 
@@ -1109,6 +1124,10 @@ local function createESPForPlayer(targetPlayer)
 	infoLabel.Parent = screenBox
 
 	espObjects[targetPlayer] = {
+		Model = model,
+		Humanoid = hum,
+		Root = root,
+		LastInfoUpdate = 0,
 		Highlight = highlight,
 		ScreenBox = screenBox,
 		Top = top,
@@ -1144,7 +1163,7 @@ end
 
 local espTimer = 0
 
-local function updateESPObject(targetPlayer, data)
+local function updateESPObject(targetPlayer, data, now)
 	local model = targetPlayer.Character
 
 	if not model or not model.Parent then
@@ -1152,14 +1171,23 @@ local function updateESPObject(targetPlayer, data)
 		return
 	end
 
-	local hum = model:FindFirstChildOfClass("Humanoid")
+	local hum = data.Humanoid
+	local root = data.Root
 
-	if not hum or hum.Health <= 0 then
+	if not hum or hum.Parent ~= model then
+		hum = model:FindFirstChildOfClass("Humanoid")
+		data.Humanoid = hum
+	end
+
+	if not root or root.Parent ~= model then
+		root = getSafeRoot(model)
+		data.Root = root
+	end
+
+	if not hum or hum.Health <= 0 or not root then
 		removeESPForPlayer(targetPlayer)
 		return
 	end
-
-	local root = getSafeRoot(model)
 
 	if root and camera then
 		local distance = (camera.CFrame.Position - root.Position).Magnitude
@@ -1261,17 +1289,26 @@ local function updateESPObject(targetPlayer, data)
 	data.HealthFill.Size = UDim2.new(1, 0, percent, 0)
 	data.HealthFill.BackgroundColor3 = getESPHealthColor(percent)
 
-	data.InfoLabel.Visible = state.ESPInfo and state.ESPNames
+	local showText = state.ESPInfo and state.ESPNames
+	data.InfoLabel.Visible = showText
 	data.InfoLabel.Position = UDim2.new(0, -85, 0, -88)
 	data.InfoLabel.Size = UDim2.new(1, 170, 0, 84)
-	data.InfoLabel.Text = getESPInfoText(targetPlayer, model, hum)
 
-	if data.Highlight then
+	if showText and (now - (data.LastInfoUpdate or 0)) >= ESP_TEXT_UPDATE_RATE then
+		data.InfoLabel.Text = getESPInfoText(targetPlayer, model, hum)
+		data.LastInfoUpdate = now
+	end
+
+	if data.Highlight and data.Highlight.Enabled ~= state.ESPHighlight then
 		data.Highlight.Enabled = state.ESPHighlight
 	end
 end
 
 local function updateESP(dt)
+	if not state.ESP then
+		return
+	end
+
 	espTimer += dt
 
 	if espTimer < ESP_UPDATE_RATE then
@@ -1279,27 +1316,41 @@ local function updateESP(dt)
 	end
 
 	espTimer = 0
+	local now = os.clock()
+	local camPos = camera and camera.CFrame.Position
 
-	if not state.ESP then
-		clearESP()
-		return
-	end
+	-- Création uniquement des ESP utiles, pas pour les joueurs trop loin
+	for _, targetPlayer in ipairs(playerList) do
+		if targetPlayer ~= player and targetPlayer.Character and isAlive(targetPlayer.Character) then
+			local root = getSafeRoot(targetPlayer.Character)
 
-	for _, targetPlayer in ipairs(Players:GetPlayers()) do
-		if targetPlayer ~= player then
-			createESPForPlayer(targetPlayer)
+			if root and camPos then
+				local distance = (camPos - root.Position).Magnitude
+
+				if distance <= state.ESPMaxDistance then
+					createESPForPlayer(targetPlayer)
+				elseif espObjects[targetPlayer] then
+					removeESPForPlayer(targetPlayer)
+				end
+			end
+		elseif espObjects[targetPlayer] then
+			removeESPForPlayer(targetPlayer)
 		end
 	end
 
 	for targetPlayer, data in pairs(espObjects) do
-		updateESPObject(targetPlayer, data)
+		updateESPObject(targetPlayer, data, now)
 	end
 end
 
+Players.PlayerRemoving:Connect(function(targetPlayer)
+	removeESPForPlayer(targetPlayer)
+end)
+
 --// PAGE CONTENT
 
-makeTitle(dashboardPage, "Solarys Exécutor made by Boulgour")
-makeInfo(dashboardPage, "Question ? Rendez vous sur le discord.", 105)
+makeTitle(dashboardPage, "New Hearth Executor Style")
+makeInfo(dashboardPage, "Interface chargée.\nCompatible R6 + R15.\nESP admin complet ajouté.\nStyle sombre/violet.\nRightShift = ouvrir / fermer le panel.", 105)
 
 makeTitle(movementPage, "Movement")
 
@@ -1571,9 +1622,13 @@ end)
 local trackerTimer = 0
 
 local function updateTracker(dt)
+	if not trackerPage.Visible then
+		return
+	end
+
 	trackerTimer += dt
 
-	if trackerTimer < 0.4 then
+	if trackerTimer < 0.6 then
 		return
 	end
 
@@ -1589,7 +1644,7 @@ local function updateTracker(dt)
 	table.insert(lines, "TRACK ALL")
 	table.insert(lines, "----------------------")
 
-	for _, targetPlayer in ipairs(Players:GetPlayers()) do
+	for _, targetPlayer in ipairs(playerList) do
 		if targetPlayer ~= player then
 			local distanceText = "N/A"
 			local teamText = "No Team"
@@ -1620,11 +1675,23 @@ end
 
 --// MAIN LOOP
 
+local noclipTimer = 0
+local fovTimer = 0
+local lastTargetInfo = nil
+
 RunService.RenderStepped:Connect(function(dt)
 	camera = workspace.CurrentCamera
 
 	if camera then
-		camera.FieldOfView = state.CameraFOV
+		fovTimer += dt
+
+		if fovTimer >= 0.25 then
+			fovTimer = 0
+
+			if math.abs(camera.FieldOfView - state.CameraFOV) > 0.05 then
+				camera.FieldOfView = state.CameraFOV
+			end
+		end
 	end
 
 	-- Fly
@@ -1681,37 +1748,54 @@ RunService.RenderStepped:Connect(function(dt)
 		stopFly()
 	end
 
-	-- Noclip
-	updateNoclip()
+	-- Noclip optimisé : pas besoin de rescanner toutes les pièces à chaque frame
+	if state.Noclip then
+		noclipTimer += dt
+
+		if noclipTimer >= 0.2 then
+			noclipTimer = 0
+			updateNoclip()
+		end
+	end
 
 	-- Spin
 	if state.Spin and rootPart then
 		rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(state.SpinSpeed) * dt, 0)
 	end
 
-	-- Aim Assist propre
+	-- Aim Assist optimisé
 	if shouldAimAssist() and camera then
-		local targetPart = getClosestAimTarget()
+		aimScanTimer += dt
 
-		if targetPart then
+		if aimScanTimer >= AIM_SCAN_RATE then
+			aimScanTimer = 0
+			aimTargetPart = getClosestAimTarget()
+		end
+
+		if aimTargetPart and aimTargetPart.Parent then
 			local camPos = camera.CFrame.Position
-			local wanted = CFrame.lookAt(camPos, targetPart.Position)
+			local wanted = CFrame.lookAt(camPos, aimTargetPart.Position)
 			local alpha = math.clamp(state.AimStrength / 100, 0.01, 0.7)
 
 			camera.CFrame = camera.CFrame:Lerp(wanted, alpha)
+		else
+			aimTargetPart = nil
 		end
 	else
 		currentTargetName = "Aucune"
+		aimTargetPart = nil
+		aimScanTimer = 0
 	end
 
-	targetInfo.Text = "Cible actuelle : " .. currentTargetName
+	local targetLine = "Cible actuelle : " .. currentTargetName
+	if targetLine ~= lastTargetInfo then
+		lastTargetInfo = targetLine
+		targetInfo.Text = targetLine
+	end
 
 	updateESP(dt)
 	updateTracker(dt)
 
-	player:SetAttribute("NoRecoil", state.NoRecoil)
-	player:SetAttribute("ClientFly", state.Fly)
-	player:SetAttribute("AimAssist", state.AimAssist)
 end)
 
 selectPage("Dashboard")
