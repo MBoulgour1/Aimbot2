@@ -1,7 +1,7 @@
---// NEW HEARTH - DARK EXECUTOR STYLE FIXED
+--// NEW HEARTH - DARK PURPLE STYLE + ADMIN ESP COMPLET
 --// LocalScript dans StarterPlayer > StarterPlayerScripts
 --// Compatible R6 + R15
---// Fly, Boost, Noclip, Spin, Aim Assist propre, ESP Debug, Track All, TP nearest enemy, NoRecoil attribute
+--// Fly, Boost, Noclip, Spin, Aim Assist propre, ESP complet, Track All, TP nearest enemy, NoRecoil attribute
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -38,6 +38,10 @@ local state = {
 
 	ESP = false,
 	ESPNames = true,
+	ESPBox = true,
+	ESPHealth = true,
+	ESPInfo = true,
+	ESPHighlight = true,
 	ESPMaxDistance = 900,
 
 	TrackAll = true,
@@ -158,10 +162,25 @@ local function isEnemy(targetPlayer)
 	return true
 end
 
---// GUI BASE
+--// GUI BASE - AMONG STYLE / DARK PURPLE
+
+local THEME = {
+	Bg = Color3.fromRGB(5, 5, 5),
+	Bg2 = Color3.fromRGB(8, 8, 8),
+	Panel = Color3.fromRGB(10, 10, 10),
+	Section = Color3.fromRGB(12, 12, 12),
+	Stroke = Color3.fromRGB(58, 58, 58),
+	StrokeDark = Color3.fromRGB(32, 32, 32),
+	Purple = Color3.fromRGB(145, 70, 255),
+	PurpleSoft = Color3.fromRGB(190, 125, 255),
+	Text = Color3.fromRGB(232, 232, 232),
+	Muted = Color3.fromRGB(150, 150, 150),
+	Button = Color3.fromRGB(28, 28, 28),
+	ButtonHover = Color3.fromRGB(38, 38, 38),
+}
 
 local screenGui = create("ScreenGui", {
-	Name = "NewHearthExecutorStyle",
+	Name = "NewHearthAmongStyle",
 	ResetOnSpawn = false,
 	IgnoreGuiInset = true,
 	Parent = player:WaitForChild("PlayerGui")
@@ -169,231 +188,136 @@ local screenGui = create("ScreenGui", {
 
 local main = create("Frame", {
 	Name = "Main",
-	Size = UDim2.new(0, 1040, 0, 590),
-	Position = UDim2.new(0.5, -520, 0.5, -295),
-	BackgroundColor3 = Color3.fromRGB(5, 5, 6),
+	Size = UDim2.new(0, 565, 0, 550),
+	Position = UDim2.new(0.5, -282, 0.5, -275),
+	BackgroundColor3 = THEME.Bg,
 	BorderSizePixel = 0,
 	Parent = screenGui
 })
 
-stroke(main, Color3.fromRGB(42, 42, 46), 1, 0)
-corner(main, 4)
+stroke(main, THEME.Stroke, 1, 0)
 
---// WINDOW BAR
+create("Frame", {
+	Name = "TopPurpleLine",
+	Size = UDim2.new(1, 0, 0, 2),
+	BackgroundColor3 = THEME.Purple,
+	BorderSizePixel = 0,
+	Parent = main
+})
 
+-- Petite barre invisible pour garder le drag du script
 local windowBar = create("Frame", {
 	Name = "WindowBar",
-	Size = UDim2.new(1, 0, 0, 26),
-	BackgroundColor3 = Color3.fromRGB(4, 4, 5),
+	Size = UDim2.new(1, -90, 0, 72),
+	BackgroundTransparency = 1,
 	BorderSizePixel = 0,
+	Parent = main
+})
+
+local close = create("TextButton", {
+	Name = "Close",
+	Size = UDim2.new(0, 28, 0, 24),
+	Position = UDim2.new(1, -34, 0, 5),
+	BackgroundTransparency = 1,
+	Text = "×",
+	TextColor3 = THEME.Muted,
+	Font = Enum.Font.GothamBold,
+	TextSize = 16,
+	AutoButtonColor = false,
 	Parent = main
 })
 
 local minimize = create("TextButton", {
-	Size = UDim2.new(0, 38, 1, 0),
-	Position = UDim2.new(1, -114, 0, 0),
+	Name = "Minimize",
+	Size = UDim2.new(0, 28, 0, 24),
+	Position = UDim2.new(1, -64, 0, 5),
 	BackgroundTransparency = 1,
 	Text = "–",
-	TextColor3 = Color3.fromRGB(230, 230, 230),
-	Font = Enum.Font.GothamBold,
-	TextSize = 20,
-	AutoButtonColor = false,
-	Parent = windowBar
-})
-
-local maximize = create("TextButton", {
-	Size = UDim2.new(0, 38, 1, 0),
-	Position = UDim2.new(1, -76, 0, 0),
-	BackgroundTransparency = 1,
-	Text = "↗",
-	TextColor3 = Color3.fromRGB(230, 230, 230),
-	Font = Enum.Font.GothamBold,
-	TextSize = 14,
-	AutoButtonColor = false,
-	Parent = windowBar
-})
-
-local close = create("TextButton", {
-	Size = UDim2.new(0, 38, 1, 0),
-	Position = UDim2.new(1, -38, 0, 0),
-	BackgroundTransparency = 1,
-	Text = "×",
-	TextColor3 = Color3.fromRGB(230, 230, 230),
+	TextColor3 = THEME.Muted,
 	Font = Enum.Font.GothamBold,
 	TextSize = 18,
 	AutoButtonColor = false,
-	Parent = windowBar
-})
-
---// SIDEBAR
-
-local sidebar = create("Frame", {
-	Name = "Sidebar",
-	Size = UDim2.new(0, 240, 1, -26),
-	Position = UDim2.new(0, 0, 0, 26),
-	BackgroundColor3 = Color3.fromRGB(7, 7, 8),
-	BorderSizePixel = 0,
 	Parent = main
 })
 
-create("Frame", {
-	Size = UDim2.new(0, 1, 1, 0),
-	Position = UDim2.new(1, -1, 0, 0),
-	BackgroundColor3 = Color3.fromRGB(35, 35, 38),
-	BorderSizePixel = 0,
-	Parent = sidebar
-})
-
-create("TextLabel", {
-	Size = UDim2.new(1, -30, 0, 78),
-	Position = UDim2.new(0, 20, 0, 8),
+local maximize = create("TextButton", {
+	Name = "Maximize",
+	Size = UDim2.new(0, 28, 0, 24),
+	Position = UDim2.new(1, -94, 0, 5),
 	BackgroundTransparency = 1,
-	Text = "◓  New Hearth",
-	TextColor3 = Color3.fromRGB(245, 245, 245),
-	Font = Enum.Font.GothamBlack,
-	TextSize = 22,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = sidebar
-})
-
-create("TextLabel", {
-	Size = UDim2.new(0, 28, 0, 28),
-	Position = UDim2.new(1, -42, 0, 32),
-	BackgroundTransparency = 1,
-	Text = "‹",
-	TextColor3 = Color3.fromRGB(240, 240, 240),
+	Text = "□",
+	TextColor3 = THEME.Muted,
 	Font = Enum.Font.GothamBold,
-	TextSize = 30,
-	Parent = sidebar
+	TextSize = 12,
+	AutoButtonColor = false,
+	Parent = main
 })
 
---// CONTENT
+local header = create("Frame", {
+	Name = "Header",
+	Size = UDim2.new(1, -30, 0, 54),
+	Position = UDim2.new(0, 15, 0, 18),
+	BackgroundTransparency = 1,
+	Parent = main
+})
+
+local titleBox = create("Frame", {
+	Name = "TitleBox",
+	Size = UDim2.new(0, 106, 0, 39),
+	Position = UDim2.new(0, 0, 0, 0),
+	BackgroundColor3 = THEME.Panel,
+	BorderSizePixel = 0,
+	Parent = header
+})
+
+stroke(titleBox, THEME.Stroke, 1, 0)
+
+create("TextLabel", {
+	Size = UDim2.new(1, 0, 1, 0),
+	BackgroundTransparency = 1,
+	Text = "Solarys",
+	TextColor3 = THEME.Text,
+	Font = Enum.Font.Code,
+	TextSize = 12,
+	Parent = titleBox
+})
+
+local tabBox = create("Frame", {
+	Name = "TabBox",
+	Size = UDim2.new(1, -122, 0, 39),
+	Position = UDim2.new(0, 118, 0, 0),
+	BackgroundColor3 = THEME.Panel,
+	BorderSizePixel = 0,
+	Parent = header
+})
+
+stroke(tabBox, THEME.Stroke, 1, 0)
+
+local activeTabText = create("TextLabel", {
+	Name = "ActiveTabText",
+	Size = UDim2.new(0, 1, 0, 1),
+	BackgroundTransparency = 1,
+	Text = "",
+	TextTransparency = 1,
+	Parent = tabBox
+})
 
 local content = create("Frame", {
 	Name = "Content",
-	Size = UDim2.new(1, -240, 1, -26),
-	Position = UDim2.new(0, 240, 0, 26),
-	BackgroundColor3 = Color3.fromRGB(5, 5, 6),
+	Size = UDim2.new(1, -30, 1, -92),
+	Position = UDim2.new(0, 15, 0, 74),
+	BackgroundColor3 = THEME.Panel,
 	BorderSizePixel = 0,
 	Parent = main
 })
 
-local tabBar = create("Frame", {
-	Name = "TabBar",
-	Size = UDim2.new(1, 0, 0, 66),
-	BackgroundColor3 = Color3.fromRGB(6, 6, 7),
-	BorderSizePixel = 0,
-	Parent = content
-})
-
-create("Frame", {
-	Size = UDim2.new(1, 0, 0, 1),
-	Position = UDim2.new(0, 0, 1, -1),
-	BackgroundColor3 = Color3.fromRGB(34, 34, 37),
-	BorderSizePixel = 0,
-	Parent = tabBar
-})
-
-local activeTabBox = create("Frame", {
-	Size = UDim2.new(0, 200, 0, 42),
-	Position = UDim2.new(0, 20, 0, 13),
-	BackgroundColor3 = Color3.fromRGB(16, 16, 18),
-	BorderSizePixel = 0,
-	Parent = tabBar
-})
-
-corner(activeTabBox, 9)
-stroke(activeTabBox, Color3.fromRGB(220, 220, 220), 1, 0.25)
-
-local activeTabText = create("TextLabel", {
-	Size = UDim2.new(1, -22, 1, 0),
-	Position = UDim2.new(0, 14, 0, 0),
-	BackgroundTransparency = 1,
-	Text = "Dashboard",
-	TextColor3 = Color3.fromRGB(255, 255, 255),
-	Font = Enum.Font.Code,
-	TextSize = 15,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = activeTabBox
-})
-
-local plusTab = create("TextButton", {
-	Size = UDim2.new(0, 50, 0, 38),
-	Position = UDim2.new(0, 228, 0, 15),
-	BackgroundColor3 = Color3.fromRGB(26, 26, 29),
-	Text = "+",
-	TextColor3 = Color3.fromRGB(170, 170, 170),
-	Font = Enum.Font.GothamBold,
-	TextSize = 22,
-	AutoButtonColor = false,
-	Parent = tabBar
-})
-
-corner(plusTab, 8)
-stroke(plusTab, Color3.fromRGB(58, 58, 62), 1, 0)
-
-local actionBar = create("Frame", {
-	Name = "ActionBar",
-	Size = UDim2.new(1, 0, 0, 70),
-	Position = UDim2.new(0, 0, 0, 66),
-	BackgroundColor3 = Color3.fromRGB(5, 5, 6),
-	BorderSizePixel = 0,
-	Parent = content
-})
-
-create("Frame", {
-	Size = UDim2.new(1, 0, 0, 1),
-	Position = UDim2.new(0, 0, 1, -1),
-	BackgroundColor3 = Color3.fromRGB(34, 34, 37),
-	BorderSizePixel = 0,
-	Parent = actionBar
-})
-
-local function makeTopButton(text, x, callback)
-	local btn = create("TextButton", {
-		Size = UDim2.new(0, 105, 0, 38),
-		Position = UDim2.new(0, x, 0, 16),
-		BackgroundColor3 = Color3.fromRGB(8, 8, 9),
-		Text = text,
-		TextColor3 = Color3.fromRGB(238, 238, 238),
-		Font = Enum.Font.GothamMedium,
-		TextSize = 13,
-		AutoButtonColor = false,
-		Parent = actionBar
-	})
-
-	corner(btn, 6)
-	stroke(btn, Color3.fromRGB(55, 55, 60), 1, 0)
-
-	btn.MouseEnter:Connect(function()
-		tween(btn, {BackgroundColor3 = Color3.fromRGB(18, 18, 20)})
-	end)
-
-	btn.MouseLeave:Connect(function()
-		tween(btn, {BackgroundColor3 = Color3.fromRGB(8, 8, 9)})
-	end)
-
-	btn.MouseButton1Click:Connect(function()
-		if callback then
-			callback()
-		end
-	end)
-
-	return btn
-end
-
-makeTopButton("▷ Execute", 20, function() print("New Hearth Execute") end)
-makeTopButton("▣ Clear", 135, function() print("New Hearth Clear") end)
-makeTopButton("⏻ Reset", 250, function() print("New Hearth Reset") end)
-makeTopButton("▤ Save", 365, function() print("New Hearth Save") end)
-makeTopButton("▱ Open", 480, function() print("New Hearth Open") end)
-makeTopButton("⌁ Attach", 595, function() print("New Hearth Attach") end)
+stroke(content, THEME.Stroke, 1, 0)
 
 local pageHolder = create("Frame", {
 	Name = "PageHolder",
-	Size = UDim2.new(1, 0, 1, -136),
-	Position = UDim2.new(0, 0, 0, 136),
-	BackgroundColor3 = Color3.fromRGB(4, 4, 5),
+	Size = UDim2.new(1, -28, 1, -28),
+	Position = UDim2.new(0, 14, 0, 14),
+	BackgroundTransparency = 1,
 	BorderSizePixel = 0,
 	Parent = content
 })
@@ -402,16 +326,26 @@ local pageHolder = create("Frame", {
 
 local pages = {}
 local navButtons = {}
+local navOrder = {}
+
+local displayNames = {
+	Dashboard = "Main",
+	Movement = "Mouv.",
+	Combat = "Combat",
+	Visual = "Visuals",
+	Tracker = "Players",
+	Settings = "Settings",
+}
 
 local function createPage(name)
 	local page = create("ScrollingFrame", {
 		Name = name,
-		Size = UDim2.new(1, -40, 1, -30),
-		Position = UDim2.new(0, 20, 0, 15),
+		Size = UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ScrollBarThickness = 4,
-		ScrollBarImageColor3 = Color3.fromRGB(80, 80, 85),
+		ScrollBarImageColor3 = THEME.Purple,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		Visible = false,
 		Parent = pageHolder
@@ -424,7 +358,7 @@ local function createPage(name)
 	})
 
 	layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 15)
+		page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 18)
 	end)
 
 	pages[name] = page
@@ -446,36 +380,42 @@ local function selectPage(name)
 	activeTabText.Text = name
 
 	for navName, button in pairs(navButtons) do
+		local underline = button:FindFirstChild("Underline")
 		if navName == name then
-			tween(button, {
-				BackgroundColor3 = Color3.fromRGB(20, 20, 22),
-				TextColor3 = Color3.fromRGB(255, 255, 255)
-			})
+			button.TextColor3 = THEME.PurpleSoft
+			if underline then underline.Visible = true end
 		else
-			tween(button, {
-				BackgroundColor3 = Color3.fromRGB(7, 7, 8),
-				TextColor3 = Color3.fromRGB(190, 190, 195)
-			})
+			button.TextColor3 = THEME.Text
+			if underline then underline.Visible = false end
 		end
 	end
 end
 
 local function makeNav(name, icon, y)
+	table.insert(navOrder, name)
+	local index = #navOrder
+	local tabWidth = 64
+
 	local btn = create("TextButton", {
-		Size = UDim2.new(1, -18, 0, 44),
-		Position = UDim2.new(0, 9, 0, y),
-		BackgroundColor3 = Color3.fromRGB(7, 7, 8),
-		Text = icon .. "   " .. name,
-		TextColor3 = Color3.fromRGB(190, 190, 195),
-		Font = Enum.Font.GothamMedium,
-		TextSize = 14,
-		TextXAlignment = Enum.TextXAlignment.Left,
+		Name = name .. "Tab",
+		Size = UDim2.new(0, tabWidth, 1, 0),
+		Position = UDim2.new(0, 12 + ((index - 1) * 66), 0, 0),
+		BackgroundTransparency = 1,
+		Text = displayNames[name] or name,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 11,
 		AutoButtonColor = false,
-		Parent = sidebar
+		Parent = tabBox
 	})
 
-	create("UIPadding", {
-		PaddingLeft = UDim.new(0, 18),
+	local underline = create("Frame", {
+		Name = "Underline",
+		Size = UDim2.new(1, -10, 0, 2),
+		Position = UDim2.new(0, 5, 1, -9),
+		BackgroundColor3 = THEME.Purple,
+		BorderSizePixel = 0,
+		Visible = false,
 		Parent = btn
 	})
 
@@ -493,38 +433,39 @@ makeNav("Visual", "▣", 237)
 makeNav("Tracker", "⌁", 281)
 makeNav("Settings", "⚙", 325)
 
---// UI COMPONENTS
+--// UI COMPONENTS - AMONG STYLE
 
 local function makeTitle(parent, text)
-	return create("TextLabel", {
-		Size = UDim2.new(1, 0, 0, 30),
+	local title = create("TextLabel", {
+		Size = UDim2.new(1, 0, 0, 24),
 		BackgroundTransparency = 1,
 		Text = text,
-		TextColor3 = Color3.fromRGB(245, 245, 245),
-		Font = Enum.Font.GothamBold,
-		TextSize = 18,
+		TextColor3 = THEME.PurpleSoft,
+		Font = Enum.Font.Code,
+		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Parent = parent
 	})
+
+	return title
 end
 
 local function makeInfo(parent, text, height)
 	local label = create("TextLabel", {
 		Size = UDim2.new(1, 0, 0, height or 80),
-		BackgroundColor3 = Color3.fromRGB(8, 8, 9),
+		BackgroundColor3 = THEME.Section,
 		BorderSizePixel = 0,
 		Text = text,
-		TextColor3 = Color3.fromRGB(165, 165, 170),
+		TextColor3 = THEME.Muted,
 		Font = Enum.Font.Code,
-		TextSize = 13,
+		TextSize = 12,
 		TextWrapped = true,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
 		Parent = parent
 	})
 
-	corner(label, 4)
-	stroke(label, Color3.fromRGB(42, 42, 46), 1, 0)
+	stroke(label, THEME.Stroke, 1, 0)
 
 	create("UIPadding", {
 		PaddingLeft = UDim.new(0, 14),
@@ -537,70 +478,81 @@ end
 
 local function makeToggle(parent, key, titleText, descText, callback)
 	local holder = create("Frame", {
-		Size = UDim2.new(1, 0, 0, 64),
-		BackgroundColor3 = Color3.fromRGB(8, 8, 9),
+		Size = UDim2.new(1, 0, 0, 54),
+		BackgroundColor3 = THEME.Section,
 		BorderSizePixel = 0,
 		Parent = parent
 	})
 
-	corner(holder, 4)
-	stroke(holder, Color3.fromRGB(42, 42, 46), 1, 0)
+	stroke(holder, THEME.Stroke, 1, 0)
 
 	create("TextLabel", {
-		Size = UDim2.new(1, -120, 0, 23),
-		Position = UDim2.new(0, 14, 0, 8),
+		Size = UDim2.new(1, -120, 0, 22),
+		Position = UDim2.new(0, 14, 0, 7),
 		BackgroundTransparency = 1,
 		Text = titleText,
-		TextColor3 = Color3.fromRGB(245, 245, 245),
-		Font = Enum.Font.GothamBold,
-		TextSize = 14,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Parent = holder
 	})
 
 	create("TextLabel", {
-		Size = UDim2.new(1, -120, 0, 24),
-		Position = UDim2.new(0, 14, 0, 32),
+		Size = UDim2.new(1, -120, 0, 18),
+		Position = UDim2.new(0, 14, 0, 29),
 		BackgroundTransparency = 1,
 		Text = descText,
-		TextColor3 = Color3.fromRGB(140, 140, 145),
+		TextColor3 = THEME.Muted,
 		Font = Enum.Font.Gotham,
-		TextSize = 11,
+		TextSize = 10,
 		TextWrapped = true,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Parent = holder
 	})
 
-	local switch = create("TextButton", {
-		Size = UDim2.new(0, 68, 0, 30),
-		Position = UDim2.new(1, -86, 0.5, -15),
-		BackgroundColor3 = state[key] and Color3.fromRGB(55, 120, 255) or Color3.fromRGB(24, 24, 27),
-		Text = state[key] and "ON" or "OFF",
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		Font = Enum.Font.Code,
-		TextSize = 13,
+	local smallBox = create("TextButton", {
+		Size = UDim2.new(0, 13, 0, 13),
+		Position = UDim2.new(1, -78, 0.5, -7),
+		BackgroundColor3 = state[key] and THEME.Purple or Color3.fromRGB(34, 34, 34),
+		BorderSizePixel = 0,
+		Text = "",
 		AutoButtonColor = false,
 		Parent = holder
 	})
 
-	corner(switch, 4)
-	stroke(switch, Color3.fromRGB(65, 65, 70), 1, 0)
+	stroke(smallBox, THEME.Stroke, 1, 0)
+
+	local status = create("TextLabel", {
+		Size = UDim2.new(0, 42, 0, 20),
+		Position = UDim2.new(1, -58, 0.5, -10),
+		BackgroundTransparency = 1,
+		Text = state[key] and "ON" or "OFF",
+		TextColor3 = state[key] and THEME.PurpleSoft or THEME.Muted,
+		Font = Enum.Font.Code,
+		TextSize = 12,
+		Parent = holder
+	})
 
 	local function setValue(value)
 		state[key] = value
-		switch.Text = value and "ON" or "OFF"
-
-		tween(switch, {
-			BackgroundColor3 = value and Color3.fromRGB(55, 120, 255) or Color3.fromRGB(24, 24, 27)
-		})
+		status.Text = value and "ON" or "OFF"
+		status.TextColor3 = value and THEME.PurpleSoft or THEME.Muted
+		tween(smallBox, {BackgroundColor3 = value and THEME.Purple or Color3.fromRGB(34, 34, 34)}, 0.12)
 
 		if callback then
 			callback(value)
 		end
 	end
 
-	switch.MouseButton1Click:Connect(function()
+	smallBox.MouseButton1Click:Connect(function()
 		setValue(not state[key])
+	end)
+
+	holder.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			setValue(not state[key])
+		end
 	end)
 
 	toggleSetters[key] = setValue
@@ -612,73 +564,67 @@ local function makeSlider(parent, key, titleText, minValue, maxValue, suffix, ca
 	local dragging = false
 
 	local holder = create("Frame", {
-		Size = UDim2.new(1, 0, 0, 76),
-		BackgroundColor3 = Color3.fromRGB(8, 8, 9),
+		Size = UDim2.new(1, 0, 0, 62),
+		BackgroundColor3 = THEME.Section,
 		BorderSizePixel = 0,
 		Parent = parent
 	})
 
-	corner(holder, 4)
-	stroke(holder, Color3.fromRGB(42, 42, 46), 1, 0)
+	stroke(holder, THEME.Stroke, 1, 0)
 
 	create("TextLabel", {
 		Size = UDim2.new(1, -110, 0, 24),
-		Position = UDim2.new(0, 14, 0, 8),
+		Position = UDim2.new(0, 14, 0, 7),
 		BackgroundTransparency = 1,
 		Text = titleText,
-		TextColor3 = Color3.fromRGB(245, 245, 245),
-		Font = Enum.Font.GothamBold,
-		TextSize = 14,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Parent = holder
 	})
 
 	local valueLabel = create("TextLabel", {
 		Size = UDim2.new(0, 95, 0, 24),
-		Position = UDim2.new(1, -110, 0, 8),
+		Position = UDim2.new(1, -110, 0, 7),
 		BackgroundTransparency = 1,
 		Text = tostring(value) .. (suffix or ""),
-		TextColor3 = Color3.fromRGB(180, 180, 185),
+		TextColor3 = THEME.Text,
 		Font = Enum.Font.Code,
-		TextSize = 13,
+		TextSize = 11,
 		TextXAlignment = Enum.TextXAlignment.Right,
 		Parent = holder
 	})
 
 	local track = create("Frame", {
-		Size = UDim2.new(1, -28, 0, 6),
-		Position = UDim2.new(0, 14, 0, 51),
-		BackgroundColor3 = Color3.fromRGB(35, 35, 38),
+		Size = UDim2.new(1, -28, 0, 7),
+		Position = UDim2.new(0, 14, 0, 42),
+		BackgroundColor3 = Color3.fromRGB(34, 34, 34),
 		BorderSizePixel = 0,
 		Parent = holder
 	})
 
-	corner(track, 99)
+	stroke(track, Color3.fromRGB(18, 18, 18), 1, 0)
 
 	local fill = create("Frame", {
 		Size = UDim2.new(0, 0, 1, 0),
-		BackgroundColor3 = Color3.fromRGB(55, 120, 255),
+		BackgroundColor3 = THEME.Purple,
 		BorderSizePixel = 0,
 		Parent = track
 	})
-
-	corner(fill, 99)
 
 	local knob = create("Frame", {
-		Size = UDim2.new(0, 14, 0, 14),
-		Position = UDim2.new(0, -7, 0.5, -7),
-		BackgroundColor3 = Color3.fromRGB(245, 245, 245),
+		Size = UDim2.new(0, 5, 0, 13),
+		Position = UDim2.new(0, -2, 0.5, -6),
+		BackgroundColor3 = THEME.PurpleSoft,
 		BorderSizePixel = 0,
 		Parent = track
 	})
-
-	corner(knob, 99)
 
 	local function updateVisual()
 		local alpha = math.clamp((value - minValue) / (maxValue - minValue), 0, 1)
-
 		fill.Size = UDim2.new(alpha, 0, 1, 0)
-		knob.Position = UDim2.new(alpha, -7, 0.5, -7)
+		knob.Position = UDim2.new(alpha, -2, 0.5, -6)
 
 		if key == "BoostMultiplier" then
 			valueLabel.Text = string.format("%.1f", value) .. (suffix or "")
@@ -701,7 +647,6 @@ local function makeSlider(parent, key, titleText, minValue, maxValue, suffix, ca
 		local startX = track.AbsolutePosition.X
 		local width = track.AbsoluteSize.X
 		local alpha = math.clamp((x - startX) / width, 0, 1)
-
 		setValue(minValue + ((maxValue - minValue) * alpha))
 	end
 
@@ -732,6 +677,7 @@ local function makeSlider(parent, key, titleText, minValue, maxValue, suffix, ca
 
 	updateVisual()
 end
+
 
 --// CROSSHAIR + AIM CIRCLE
 
@@ -771,7 +717,7 @@ local aimCircle = create("Frame", {
 })
 
 corner(aimCircle, 999)
-stroke(aimCircle, Color3.fromRGB(55, 120, 255), 2, 0.35)
+stroke(aimCircle, Color3.fromRGB(150, 70, 255), 2, 0.35)
 
 --// NOCLIP
 
@@ -985,61 +931,193 @@ local function teleportNearEnemy()
 	rootPart.CFrame = CFrame.lookAt(pos, targetRoot.Position)
 end
 
---// ESP DEBUG
+--// ESP ADMIN COMPLET : BOX 2D + VIE + INFOS + HIGHLIGHT
+
+local ESP_THEME = {
+	BoxLine = Color3.fromRGB(190, 255, 200), -- vert clair pâle
+	BoxSoft = Color3.fromRGB(225, 255, 230),
+
+	HealthBack = Color3.fromRGB(8, 12, 18),
+	HealthFull = Color3.fromRGB(60, 210, 255), -- cyan, différent de la box
+	HealthMid = Color3.fromRGB(255, 190, 70),
+	HealthLow = Color3.fromRGB(255, 70, 70),
+
+	Text = Color3.fromRGB(245, 245, 245)
+}
+
+local ESP_LINE_THICKNESS = 1
+local ESP_HEALTH_WIDTH = 3
+local ESP_HEALTH_GAP = 4
+local ESP_BOX_PADDING = 4
+local ESP_UPDATE_RATE = 0.03
+
+local function getESPHealthColor(percent)
+	if percent > 0.5 then
+		return ESP_THEME.HealthFull
+	elseif percent > 0.25 then
+		return ESP_THEME.HealthMid
+	else
+		return ESP_THEME.HealthLow
+	end
+end
+
+local function makeESPLine(parent, name)
+	local line = Instance.new("Frame")
+	line.Name = name
+	line.BackgroundColor3 = ESP_THEME.BoxLine
+	line.BackgroundTransparency = 0.05
+	line.BorderSizePixel = 0
+	line.ZIndex = 60
+	line.Parent = parent
+	return line
+end
+
+local function getESPTeamName(targetPlayer)
+	if targetPlayer.Team then
+		return targetPlayer.Team.Name
+	end
+
+	return "Aucune"
+end
+
+local function getESPGrade(targetPlayer, targetCharacter)
+	local grade =
+		targetPlayer:GetAttribute("Grade")
+		or targetPlayer:GetAttribute("Rank")
+		or targetPlayer:GetAttribute("Rang")
+		or targetPlayer:GetAttribute("Role")
+
+	if not grade and targetCharacter then
+		grade =
+			targetCharacter:GetAttribute("Grade")
+			or targetCharacter:GetAttribute("Rank")
+			or targetCharacter:GetAttribute("Rang")
+			or targetCharacter:GetAttribute("Role")
+	end
+
+	local leaderstats = targetPlayer:FindFirstChild("leaderstats")
+
+	if not grade and leaderstats then
+		local stat =
+			leaderstats:FindFirstChild("Grade")
+			or leaderstats:FindFirstChild("Rank")
+			or leaderstats:FindFirstChild("Rang")
+			or leaderstats:FindFirstChild("Role")
+
+		if stat and stat:IsA("ValueBase") then
+			grade = stat.Value
+		end
+	end
+
+	return grade and tostring(grade) or "Aucun"
+end
+
+local function getESPEquippedTool(targetCharacter)
+	if not targetCharacter then
+		return "Aucun"
+	end
+
+	local tool = targetCharacter:FindFirstChildOfClass("Tool")
+	return tool and tool.Name or "Aucun"
+end
+
+local function getESPDistance(targetCharacter)
+	local myRoot = character and getSafeRoot(character)
+	local targetRoot = targetCharacter and getSafeRoot(targetCharacter)
+
+	if myRoot and targetRoot then
+		return math.floor((myRoot.Position - targetRoot.Position).Magnitude)
+	end
+
+	return 0
+end
+
+local function getESPInfoText(targetPlayer, targetCharacter, targetHumanoid)
+	local hp = math.floor(targetHumanoid.Health)
+	local maxHp = math.floor(targetHumanoid.MaxHealth)
+
+	return targetPlayer.DisplayName .. " @" .. targetPlayer.Name ..
+		"\nTeam : " .. getESPTeamName(targetPlayer) ..
+		"\nGrade : " .. getESPGrade(targetPlayer, targetCharacter) ..
+		"\nVie : " .. hp .. " / " .. maxHp ..
+		"\nDistance : " .. getESPDistance(targetCharacter) .. " studs" ..
+		"\nOutil : " .. getESPEquippedTool(targetCharacter)
+end
 
 local function createESPForPlayer(targetPlayer)
-	if not targetPlayer.Character then return end
+	if targetPlayer == player then return end
 	if espObjects[targetPlayer] then return end
+	if not targetPlayer.Character then return end
 
 	local model = targetPlayer.Character
-	local root = getSafeTargetPart(model)
-	if not root then return end
+	local hum = model:FindFirstChildOfClass("Humanoid")
+
+	if not hum or hum.Health <= 0 then
+		return
+	end
 
 	local highlight = Instance.new("Highlight")
-	highlight.Name = "NewHearthESP"
-	highlight.FillColor = Color3.fromRGB(55, 120, 255)
-	highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-	highlight.FillTransparency = 0.78
-	highlight.OutlineTransparency = 0.12
-	highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+	highlight.Name = "NewHearthAdminESP_Highlight"
+	highlight.Adornee = model
+	highlight.FillTransparency = 1
+	highlight.OutlineTransparency = 0.15
+	highlight.OutlineColor = ESP_THEME.BoxSoft
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Enabled = state.ESPHighlight
 	highlight.Parent = model
 
-	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "NewHearthNameESP"
-	billboard.Size = UDim2.new(0, 190, 0, 38)
-	billboard.StudsOffset = Vector3.new(0, 2.8, 0)
-	billboard.MaxDistance = state.ESPMaxDistance
-	billboard.AlwaysOnTop = false
-	billboard.Enabled = state.ESPNames
-	billboard.Adornee = root
-	billboard.Parent = root
+	local screenBox = Instance.new("Frame")
+	screenBox.Name = "NewHearthAdminESP_Box_" .. targetPlayer.Name
+	screenBox.BackgroundTransparency = 1
+	screenBox.Visible = false
+	screenBox.ZIndex = 55
+	screenBox.Parent = screenGui
 
-	local bg = Instance.new("Frame")
-	bg.Size = UDim2.new(1, 0, 1, 0)
-	bg.BackgroundColor3 = Color3.fromRGB(7, 7, 8)
-	bg.BackgroundTransparency = 0.18
-	bg.BorderSizePixel = 0
-	bg.Parent = billboard
+	local top = makeESPLine(screenBox, "Top")
+	local bottom = makeESPLine(screenBox, "Bottom")
+	local left = makeESPLine(screenBox, "Left")
+	local right = makeESPLine(screenBox, "Right")
 
-	corner(bg, 4)
-	stroke(bg, Color3.fromRGB(55, 120, 255), 1, 0.45)
+	local healthBack = Instance.new("Frame")
+	healthBack.Name = "HealthBack"
+	healthBack.BackgroundColor3 = ESP_THEME.HealthBack
+	healthBack.BackgroundTransparency = 0.15
+	healthBack.BorderSizePixel = 0
+	healthBack.ZIndex = 61
+	healthBack.Parent = screenBox
 
-	local text = Instance.new("TextLabel")
-	text.Size = UDim2.new(1, -10, 1, 0)
-	text.Position = UDim2.new(0, 5, 0, 0)
-	text.BackgroundTransparency = 1
-	text.Text = targetPlayer.Name
-	text.TextColor3 = Color3.fromRGB(255, 255, 255)
-	text.TextStrokeTransparency = 0.6
-	text.Font = Enum.Font.Code
-	text.TextSize = 12
-	text.TextTruncate = Enum.TextTruncate.AtEnd
-	text.Parent = bg
+	local healthFill = Instance.new("Frame")
+	healthFill.Name = "HealthFill"
+	healthFill.AnchorPoint = Vector2.new(0, 1)
+	healthFill.Position = UDim2.new(0, 0, 1, 0)
+	healthFill.Size = UDim2.new(1, 0, 1, 0)
+	healthFill.BackgroundColor3 = ESP_THEME.HealthFull
+	healthFill.BorderSizePixel = 0
+	healthFill.ZIndex = 62
+	healthFill.Parent = healthBack
+
+	local infoLabel = Instance.new("TextLabel")
+	infoLabel.Name = "InfoLabel"
+	infoLabel.BackgroundTransparency = 1
+	infoLabel.TextColor3 = ESP_THEME.Text
+	infoLabel.TextSize = 10
+	infoLabel.Font = Enum.Font.GothamMedium
+	infoLabel.TextStrokeTransparency = 0.35
+	infoLabel.TextXAlignment = Enum.TextXAlignment.Center
+	infoLabel.TextYAlignment = Enum.TextYAlignment.Bottom
+	infoLabel.ZIndex = 62
+	infoLabel.Parent = screenBox
 
 	espObjects[targetPlayer] = {
 		Highlight = highlight,
-		Billboard = billboard,
-		Text = text,
+		ScreenBox = screenBox,
+		Top = top,
+		Bottom = bottom,
+		Left = left,
+		Right = right,
+		HealthBack = healthBack,
+		HealthFill = healthFill,
+		InfoLabel = infoLabel,
 	}
 end
 
@@ -1051,8 +1129,8 @@ local function removeESPForPlayer(targetPlayer)
 		data.Highlight:Destroy()
 	end
 
-	if data.Billboard then
-		data.Billboard:Destroy()
+	if data.ScreenBox then
+		data.ScreenBox:Destroy()
 	end
 
 	espObjects[targetPlayer] = nil
@@ -1066,10 +1144,137 @@ end
 
 local espTimer = 0
 
+local function updateESPObject(targetPlayer, data)
+	local model = targetPlayer.Character
+
+	if not model or not model.Parent then
+		removeESPForPlayer(targetPlayer)
+		return
+	end
+
+	local hum = model:FindFirstChildOfClass("Humanoid")
+
+	if not hum or hum.Health <= 0 then
+		removeESPForPlayer(targetPlayer)
+		return
+	end
+
+	local root = getSafeRoot(model)
+
+	if root and camera then
+		local distance = (camera.CFrame.Position - root.Position).Magnitude
+
+		if distance > state.ESPMaxDistance then
+			data.ScreenBox.Visible = false
+			if data.Highlight then
+				data.Highlight.Enabled = false
+			end
+			return
+		end
+	end
+
+	local success, cframe, size = pcall(function()
+		return model:GetBoundingBox()
+	end)
+
+	if not success or not camera then
+		data.ScreenBox.Visible = false
+		return
+	end
+
+	local half = size / 2
+
+	local corners = {
+		Vector3.new(-half.X, -half.Y, -half.Z),
+		Vector3.new(-half.X, -half.Y, half.Z),
+		Vector3.new(-half.X, half.Y, -half.Z),
+		Vector3.new(-half.X, half.Y, half.Z),
+		Vector3.new(half.X, -half.Y, -half.Z),
+		Vector3.new(half.X, -half.Y, half.Z),
+		Vector3.new(half.X, half.Y, -half.Z),
+		Vector3.new(half.X, half.Y, half.Z)
+	}
+
+	local minX, minY = math.huge, math.huge
+	local maxX, maxY = -math.huge, -math.huge
+	local visible = false
+
+	for _, cornerPoint in ipairs(corners) do
+		local worldPoint = cframe:PointToWorldSpace(cornerPoint)
+		local screenPoint = camera:WorldToViewportPoint(worldPoint)
+
+		if screenPoint.Z > 0 then
+			visible = true
+			minX = math.min(minX, screenPoint.X)
+			minY = math.min(minY, screenPoint.Y)
+			maxX = math.max(maxX, screenPoint.X)
+			maxY = math.max(maxY, screenPoint.Y)
+		end
+	end
+
+	if not visible then
+		data.ScreenBox.Visible = false
+		return
+	end
+
+	local x = minX - ESP_BOX_PADDING
+	local y = minY - ESP_BOX_PADDING
+	local width = (maxX - minX) + (ESP_BOX_PADDING * 2)
+	local height = (maxY - minY) + (ESP_BOX_PADDING * 2)
+
+	if width < 18 or height < 32 then
+		data.ScreenBox.Visible = false
+		return
+	end
+
+	data.ScreenBox.Visible = true
+	data.ScreenBox.Position = UDim2.fromOffset(x, y)
+	data.ScreenBox.Size = UDim2.fromOffset(width, height)
+
+	data.Top.Visible = state.ESPBox
+	data.Bottom.Visible = state.ESPBox
+	data.Left.Visible = state.ESPBox
+	data.Right.Visible = state.ESPBox
+
+	data.Top.Position = UDim2.fromOffset(0, 0)
+	data.Top.Size = UDim2.new(1, 0, 0, ESP_LINE_THICKNESS)
+
+	data.Bottom.Position = UDim2.new(0, 0, 1, -ESP_LINE_THICKNESS)
+	data.Bottom.Size = UDim2.new(1, 0, 0, ESP_LINE_THICKNESS)
+
+	data.Left.Position = UDim2.fromOffset(0, 0)
+	data.Left.Size = UDim2.new(0, ESP_LINE_THICKNESS, 1, 0)
+
+	data.Right.Position = UDim2.new(1, -ESP_LINE_THICKNESS, 0, 0)
+	data.Right.Size = UDim2.new(0, ESP_LINE_THICKNESS, 1, 0)
+
+	data.HealthBack.Visible = state.ESPHealth
+	data.HealthBack.Position = UDim2.new(1, ESP_HEALTH_GAP, 0, 0)
+	data.HealthBack.Size = UDim2.new(0, ESP_HEALTH_WIDTH, 1, 0)
+
+	local percent = 0
+
+	if hum.MaxHealth > 0 then
+		percent = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+	end
+
+	data.HealthFill.Size = UDim2.new(1, 0, percent, 0)
+	data.HealthFill.BackgroundColor3 = getESPHealthColor(percent)
+
+	data.InfoLabel.Visible = state.ESPInfo and state.ESPNames
+	data.InfoLabel.Position = UDim2.new(0, -85, 0, -88)
+	data.InfoLabel.Size = UDim2.new(1, 170, 0, 84)
+	data.InfoLabel.Text = getESPInfoText(targetPlayer, model, hum)
+
+	if data.Highlight then
+		data.Highlight.Enabled = state.ESPHighlight
+	end
+end
+
 local function updateESP(dt)
 	espTimer += dt
 
-	if espTimer < 0.15 then
+	if espTimer < ESP_UPDATE_RATE then
 		return
 	end
 
@@ -1081,35 +1286,20 @@ local function updateESP(dt)
 	end
 
 	for _, targetPlayer in ipairs(Players:GetPlayers()) do
-		if targetPlayer ~= player and targetPlayer.Character and isAlive(targetPlayer.Character) then
-			local root = getSafeTargetPart(targetPlayer.Character)
-
-			if root and camera then
-				local distance = (camera.CFrame.Position - root.Position).Magnitude
-
-				if distance <= state.ESPMaxDistance then
-					createESPForPlayer(targetPlayer)
-
-					local data = espObjects[targetPlayer]
-					if data then
-						data.Billboard.Enabled = state.ESPNames
-						data.Billboard.MaxDistance = state.ESPMaxDistance
-						data.Text.Text = targetPlayer.Name .. " • " .. math.floor(distance) .. " studs"
-					end
-				else
-					removeESPForPlayer(targetPlayer)
-				end
-			end
-		else
-			removeESPForPlayer(targetPlayer)
+		if targetPlayer ~= player then
+			createESPForPlayer(targetPlayer)
 		end
+	end
+
+	for targetPlayer, data in pairs(espObjects) do
+		updateESPObject(targetPlayer, data)
 	end
 end
 
 --// PAGE CONTENT
 
-makeTitle(dashboardPage, "New Hearth Executor Style")
-makeInfo(dashboardPage, "Interface chargée.\nCompatible R6 + R15.\nErreur UpperTorso corrigée.\nRightShift = ouvrir / fermer le panel.", 105)
+makeTitle(dashboardPage, "Solarys Exécutor made by Boulgour")
+makeInfo(dashboardPage, "Question ? Rendez vous sur le discord.", 105)
 
 makeTitle(movementPage, "Movement")
 
@@ -1185,13 +1375,21 @@ makeToggle(visualPage, "Crosshair", "Crosshair", "Affiche un viseur custom.", fu
 	crosshair.Visible = value
 end)
 
-makeToggle(visualPage, "ESP", "ESP Debug", "Affiche les joueurs avec un highlight non-wallhack complet.", function(value)
+makeToggle(visualPage, "ESP", "ESP Admin complet", "Box verte pâle, barre de vie cyan, infos et highlight à travers les murs.", function(value)
 	if not value then
 		clearESP()
 	end
 end)
 
-makeToggle(visualPage, "ESPNames", "ESP Names", "Affiche le nom et la distance.", nil)
+makeToggle(visualPage, "ESPBox", "ESP Box", "Affiche une box 2D fine autour des joueurs.", nil)
+
+makeToggle(visualPage, "ESPHealth", "ESP Health Bar", "Affiche une barre de vie cyan très fine à droite de la box.", nil)
+
+makeToggle(visualPage, "ESPInfo", "ESP Infos", "Affiche nom, team, grade, vie, distance et outil au-dessus du joueur.", nil)
+
+makeToggle(visualPage, "ESPHighlight", "ESP Through Walls", "Contour visible à travers les murs pour les admins.", nil)
+
+makeToggle(visualPage, "ESPNames", "ESP Text", "Active ou désactive le texte au-dessus des joueurs.", nil)
 
 makeSlider(visualPage, "CameraFOV", "Camera FOV", 50, 100, "", function(value)
 	state.CameraFOV = math.floor(value + 0.5)
@@ -1229,7 +1427,7 @@ end)
 
 makeTitle(settingsPage, "Settings")
 
-makeInfo(settingsPage, "KEYBINDS\nRightShift = ouvrir / fermer\nF = Fly\nN = Noclip\nG = Spin\nT = Aim Assist\nX = ESP\nR = No Recoil\nV = TP nearest enemy\nClic droit = Aim Assist si Aim Hold est ON", 170)
+makeInfo(settingsPage, "KEYBINDS\nRightShift = ouvrir / fermer\nF = Fly\nN = Noclip\nG = Spin\nT = Aim Assist\nX = ESP Admin\nR = No Recoil\nV = TP nearest enemy\nClic droit = Aim Assist si Aim Hold est ON", 170)
 
 --// MINI BUTTON
 
@@ -1247,7 +1445,7 @@ local miniButton = create("TextButton", {
 })
 
 corner(miniButton, 8)
-stroke(miniButton, Color3.fromRGB(70, 70, 80), 1, 0)
+stroke(miniButton, Color3.fromRGB(150, 70, 255), 1, 0)
 
 --// OPEN / CLOSE / DRAG
 
