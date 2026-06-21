@@ -1,8 +1,3 @@
---// NEW HEARTH - DARK PURPLE STYLE + ADMIN ESP COMPLET
---// LocalScript dans StarterPlayer > StarterPlayerScripts
---// Compatible R6 + R15
---// Fly, Boost, Noclip, Spin, Aim Assist propre, ESP complet, Track All, TP nearest enemy, NoRecoil attribute
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
