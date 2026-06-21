@@ -1349,8 +1349,8 @@ end)
 
 --// PAGE CONTENT
 
-makeTitle(dashboardPage, "Solarys Exécutor made by Solarys Script")
-makeInfo(dashboardPage, "Solarys on top !", 105)
+makeTitle(dashboardPage, "Solarys Aimbot Script made by Solarys Hub")
+makeInfo(dashboardPage, "Aimbot, ESP et plein d'autre pour casser les couilles aux petits fdp", 105)
 
 makeTitle(movementPage, "Movement")
 
