@@ -288,7 +288,7 @@ stroke(titleBox, THEME.Stroke, 1, 0)
 create("TextLabel", {
 	Size = UDim2.new(1, 0, 1, 0),
 	BackgroundTransparency = 1,
-	Text = "N E W",
+	Text = "Solarys",
 	TextColor3 = THEME.Text,
 	Font = Enum.Font.Code,
 	TextSize = 12,
@@ -1349,8 +1349,8 @@ end)
 
 --// PAGE CONTENT
 
-makeTitle(dashboardPage, "New Hearth Executor Style")
-makeInfo(dashboardPage, "Interface chargée.\nCompatible R6 + R15.\nESP admin complet ajouté.\nStyle sombre/violet.\nRightShift = ouvrir / fermer le panel.", 105)
+makeTitle(dashboardPage, "Solarys Exécutor made by Solarys Script")
+makeInfo(dashboardPage, "Solarys on top !", 105)
 
 makeTitle(movementPage, "Movement")
 
